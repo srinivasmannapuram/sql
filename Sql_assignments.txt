@@ -1,0 +1,438 @@
+1. Table "address"
+It is unlikely that two persons share the same address. Address is often a required field for a rental transaction. So it is probably better to store directly inside the customers table.
+
+CREATE TABLE address (
+  address_id   SMALLINT    ,
+  address      VARCHAR(50) ,
+  address2     VARCHAR(50) ,
+  district     VARCHAR(20) ,
+  city_id      SMALLINT    ,
+  postal_code  VARCHAR(10) ,
+  phone        VARCHAR(20) ,
+  last_update  TIMESTAMP   ,
+  PRIMARY KEY  (address_id),
+  KEY idx_fk_city_id (city_id),
+  CONSTRAINT `fk_address_city` FOREIGN KEY (city_id) REFERENCES city (city_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+There are 603 records for this table.
+
+Table "city"
+CREATE TABLE city (
+  city_id      SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  city         VARCHAR(50) NOT NULL,
+  country_id   SMALLINT    UNSIGNED NOT NULL,
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (city_id),
+  KEY idx_fk_country_id (country_id),
+  CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (country_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+There are 600 records for this table.
+
+Table "country"
+Having a country table may facilitate the creation of pull-down menu. Alternatively, you could consider using an ENUM (number of countries may exceed ENUM's limit). For city, there are just too many cities in the world that the list can never be exhaustive. Probably better to keep inside the address table.
+
+CREATE TABLE country (
+  country_id   SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  country      VARCHAR(50) NOT NULL,
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (country_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+There are 109 records for this table.
+
+2. 
+CREATE VIEW staff_list
+AS
+SELECT 
+  s.staff_id AS ID,
+  CONCAT(s.first_name, _utf8' ', s.last_name) AS name,
+  a.address AS address,
+  a.postal_code AS `zip code`,
+  a.phone AS phone,
+  city.city AS city,
+  country.country AS country,
+  s.store_id AS SID
+FROM staff AS s 
+  JOIN address AS a ON s.address_id = a.address_id
+  JOIN city ON a.city_id = city.city_id
+  JOIN country ON city.country_id = country.country_id;
+  
+ 
+ 3. 
+ CREATE VIEW customer_list
+AS
+SELECT 
+  cu.customer_id AS ID,
+  CONCAT(cu.first_name, _utf8' ', cu.last_name) AS name,
+  a.address AS address,
+  a.postal_code AS `zip code`,
+  a.phone AS phone,
+  city.city AS city,
+  country.country AS country,
+  IF(cu.active, _utf8'active', _utf8'') AS notes,
+  cu.store_id AS SID
+FROM customer AS cu 
+  JOIN address AS a ON cu.address_id = a.address_id
+  JOIN city ON a.city_id = city.city_id
+  JOIN country ON city.country_id = country.country_id;
+  
+  
+  4.
+ 
+SELECT first_name, last_name, hire_date 
+FROM employees 
+WHERE YEAR(hire_date)  LIKE '2000%';
+
+5.
+SELECT email,
+       SUBSTRING_INDEX(email,'@',1) AS user_name,
+       SUBSTRING_INDEX(email,'@',-1) AS domain_name
+  FROM email_table
+
+
+/// RESULT ///
+
+email                   | user_name   | domain_name
+----                    | ----        | ----
+jerry@gmail.com         | jerry       | gmail.com
+gerge@vandalay.com      | gerge       | vandalay.com
+ebenes@tufts.edu        | ebenes      | tufts.edu
+
+6.
+SELECT a.ord_no,a.ord_date,a.purch_amt,
+b.cust_name AS "Customer Name", b.grade, 
+c.name AS "Salesman", c.commission 
+FROM orders a 
+INNER JOIN customer b 
+ON a.customer_id=b.customer_id 
+INNER JOIN salesman c 
+ON a.salesman_id=c.salesman_id;
+
+7.
+SELECT a.ord_no,a.ord_date,a.purch_amt,
+b.cust_name AS "Customer Name", b.grade, 
+c.name AS "Salesman", c.commission 
+FROM orders a 
+INNER JOIN customer b 
+ON a.customer_id=b.customer_id 
+INNER JOIN salesman c 
+ON a.salesman_id=c.salesman_id;
+
+8.
+-- Display distinct Quantity values
+-- by using DISTINCT keyword
+SELECT DISTINCT Quantity
+FROM order_details
+ORDER BY Quantity;
+ 
+-- Display distinct Quantity values
+-- by using DISTINCTROW keyword
+SELECT DISTINCTROW Quantity
+FROM order_details
+ORDER BY Quantity;
+
+9.
+SELECT * FROM EMPLOYEES_TABLE,
+SELECT FIRST_NAME, LAST_NAME, DEPARTMENT_ID
+FROM EMPLOYEES_TABLE,
+
+10.
+SELECT ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight
+FROM SalesLT.Product;
+INSERT INTO dbo.demoProduct(ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight)
+VALUES (680,'HL Road Frame - Black, 58','Black',1059.31,1431.50,'58',1016.04);
+INSERT INTO dbo.demoProduct(ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight)
+VALUES (706,'HL Road Frame - Red, 58','Red',1059.31, 1431.50,'58',1016.04);
+INSERT INTO dbo.demoProduct(ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight)
+VALUES (707,'Sport-100 Helmet, Red','Red',13.0863,34.99,NULL,NULL);
+INSERT INTO dbo.demoProduct(ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight)
+VALUES (708,'Sport-100 Helmet, Black','Black',13.0863,34.99,NULL,NULL);
+INSERT INTO dbo.demoProduct(ProductID, Name, Color,
+ StandardCost, ListPrice, Size, Weight)
+VALUES (709,'Mountain Bike Socks, M','White',3.3963,9.50,'M',NULL); 
+
+11.
+
+CREATE VIEW `Customer and Suppliers by City`
+AS
+SELECT 
+   City, 
+   CompanyName, 
+   ContactName, 
+   'Customers' AS Relationship 
+FROM Customers
+UNION  -- Union two result sets (of same column numbers), remove duplicates
+SELECT City, 
+   CompanyName, 
+   ContactName, 
+   'Suppliers'
+FROM Suppliers 
+ORDER BY City, CompanyName;
+
+12.
+
+USE AdventureWorks;
+GO
+SELECT a.EmployeeID AS Employee,
+ a.Title AS EmployeeTitle,
+ b.EmployeeID AS ManagerID,
+ b.Title AS ManagerTitle,
+ c.FirstName, c.MiddleName, c.LastName
+FROM HumanResources.Employee AS a
+LEFT OUTER JOIN HumanResources.Employee AS b
+ON a.ManagerID = b.EmployeeID
+LEFT OUTER JOIN Person.Contact AS c ON a.EmployeeID = c.ContactID; 
+
+
+Topic 3: Grouping and aggregating data
+
+1.
+
+SELECT SUM(weight), AVG(weight), MIN(weight), MAX(weight) FROM surveys
+
+2.
+SELECT OrderID, COUNT(OrderID) as NumOrderDetails
+FROM OrderDetails
+GROUP BY OrderID;
+
+3.
+
+SELECT DISTINCT OrderID
+FROM OrderDetails
+WHERE Quantity <= 100000;
+
+4.
+SELECT CustomerID, SalesOrderID
+FROM SalesLT.SalesOrderHeader; 
+
+5.
+
+CREATE TABLE inventory (
+  inventory_id  MEDIUMINT  UNSIGNED NOT NULL AUTO_INCREMENT,
+                           -- Simpler to use INT UNSIGNED
+  film_id       SMALLINT   UNSIGNED NOT NULL,
+  store_id      TINYINT    UNSIGNED NOT NULL,
+  last_update   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (inventory_id),
+  KEY idx_fk_film_id (film_id),
+  KEY idx_store_id_film_id (store_id, film_id),
+  CONSTRAINT fk_inventory_store FOREIGN KEY (store_id) REFERENCES store (store_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_inventory_film FOREIGN KEY (film_id) REFERENCES film (film_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+6.
+
+SELECT
+   warehouse,
+   SUM(quantity)
+FROM
+   inventory
+GROUP BY
+   CUBE(warehouse)
+ORDER BY
+   warehouse;
+   
+ 7.
+ SELECT
+     first_name,
+     last_name
+FROM
+     people_massachusetts
+WHERE
+     hair_color = "red"
+AND
+     birth_date >= (DATE_SUB(CURDATE(),INTERVAL 30))
+ORDER BY
+     last_name
+LIMIT
+     100
+;
+
+8.
+SELECT OrderID, 
+       SUM(UnitPrice * Quantity) as TotalPrice
+FROM OrderDetails
+GROUP BY OrderID
+HAVING AVG(UnitPrice * Quantity) > $1000000.00 ;
+HAVING COUNT(OrderDetailID) < 3;
+ORDER BY TotalPrice DESC;
+
+9.
+SELECT pro_name, pro_price 
+     FROM item_mast
+    WHERE pro_price >= 250
+ ORDER BY pro_price DESC, pro_name;
+ 
+ 10.
+ UPDATE dbo.demoAddress SET AddressLine2 = 'N/A'
+WHERE AddressLine2 IS NULL; 
+
+11.
+SELECT FirstName, MiddleName, LastName, Prod.Name
+FROM Sales.Customer AS C
+INNER JOIN Person.Person AS P ON C.PersonID = P.BusinessEntityID
+INNER JOIN Sales.SalesOrderHeader AS SOH ON C.CustomerID = SOH.CustomerID
+INNER JOIN Sales.SalesOrderDetail AS SOD
+ ON SOH.SalesOrderID = SOD.SalesOrderID
+INNER JOIN Production.Product AS Prod ON SOD.ProductID = Prod.ProductID; 
+
+12.
+SELECT SalesOrderID, OrderDate
+FROM Sales.SalesOrderHeader
+WHERE YEAR(OrderDate) = 2008; 
+
+Query 4 : Querying Mutliple tables
+
+1.
+SELECT ProductID, Name
+FROM Production.Product
+WHERE ProductID IN (SELECT ProductID FROM Sales.SalesOrderDetail); 
+
+2.
+SELECT BusinessEntityID, JobTitle, LoginID
+FROM HumanResources.Employee
+WHERE JobTitle = 'Research and Development Engineer'; 
+
+3.
+
+SELECT SalesOrderID, P.ProductID, P.Name
+FROM Production.Product AS P
+LEFT OUTER JOIN Sales.SalesOrderDetail
+ AS SOD ON P.ProductID = SOD.ProductID; 
+ 
+ 4.
+ 
+SELECT ProductID, Name
+FROM Production.Product
+WHERE Name LIKE 'Chain%';
+
+5.
+
+SELECT FirstName, MiddleName, LastName, Prod.Name
+FROM Sales.Customer AS C
+INNER JOIN Person.Person AS P ON C.PersonID = P.BusinessEntityID
+INNER JOIN Sales.SalesOrderHeader AS SOH ON C.CustomerID = SOH.CustomerID
+INNER JOIN Sales.SalesOrderDetail AS SOD
+ ON SOH.SalesOrderID = SOD.SalesOrderID
+INNER JOIN Production.Product AS Prod ON SOD.ProductID = Prod.ProductID;
+
+6.
+SELECT PM.CatalogDescription, Color, Size
+FROM Production.Product AS P
+INNER JOIN Production.ProductModel AS PM ON P.ProductModelID = PM.ProductModelID; 
+
+7. 
+SELECT JobTitle, BirthDate, FirstName, LastName
+FROM HumanResources.Employee AS E
+INNER JOIN Person.Person AS P ON E.BusinessEntityID = P.BusinessEntityID;
+
+8.
+SELECT c.CustomerID, StoreID, c.TerritoryID, FirstName, MiddleName,
+ LastName, SalesOrderID
+FROM Sales.Customer AS C
+INNER JOIN Person.Person AS P ON C.PersonID = P.BusinessEntityID
+INNER JOIN Sales.SalesOrderHeader AS S ON S.CustomerID = C.CustomerID; 
+
+9.
+USE AdventureWorks;
+GO
+SELECT a.EmployeeID AS Employee,
+ a.Title AS EmployeeTitle,
+ b.EmployeeID AS ManagerID,
+ b.Title AS ManagerTitle,
+ c.FirstName, c.MiddleName, c.LastName
+FROM HumanResources.Employee AS a
+LEFT OUTER JOIN HumanResources.Employee AS b
+ON a.ManagerID = b.EmployeeID
+LEFT OUTER JOIN Person.Contact AS c ON a.EmployeeID = c.ContactID; 
+
+Topic 5: Using Subqueries
+
+1. 
+SELECT ProductID, Name
+FROM Production.Product
+WHERE ProductID IN (SELECT ProductID FROM Sales.SalesOrderDetail); 
+
+2.
+SELECT SalesOrderID,
+       RevisionNumber,
+       OrderDate
+FROM   Sales.SalesOrderHeader
+WHERE  EXISTS (SELECT 1
+               FROM   sales.SalesPerson
+               WHERE  SalesYTD > 3000000
+                      AND SalesOrderHeader.SalesPersonID 
+                        = Sales.SalesPerson.BusinessEntityID)
+						
+3. 
+SELECT ModifiedDate
+FROM Person.Person
+UNION
+SELECT HireDate
+FROM HumanResources.Employee; 
+
+4. 
+SELECT SOH.SalesOrderID, SOH.OrderDate, ProductID
+FROM Sales.SalesOrderHeader AS SOH
+INNER JOIN (
+ SELECT SalesOrderID, ProductID
+ FROM Sales.SalesOrderDetail) AS SOD
+ ON SOH.SalesOrderID = SOD.SalesOrderID;	
+
+Topic 6 : Built in Functions
+
+1.
+DECLARE @MyValue VARCHAR(10) = 'safety';   
+SELECT position = PATINDEX('%' + @MyValue + '%', DocumentSummary)   
+FROM Production.Document  
+WHERE DocumentNode = 0x7B40; 
+
+2.
+SELECT ProductID, ISNULL(Color,'No Color') AS Color, Name
+FROM Production.Product; 
+
+3.
+SELECT SalesOrderID, OrderDate, YEAR(OrderDate) AS OrderYear,
+ MONTH(OrderDate) AS OrderMonth
+FROM Sales.SalesOrderHeader;
+SELECT SalesOrderID, OrderDate, DATEPART(yyyy,OrderDate) AS OrderYear,
+ DATEPART(m,OrderDate) AS OrderMonth
+FROM Sales.SalesOrderHeader;
+
+4.
+SELECT ProductNumber, Name
+FROM SalesLT.Product
+WHERE Color IN ('Black','Red','White','Silver') and Size IN ('S','M'); 
+
+5.
+WITH Sales AS (
+ SELECT C.CustomerID
+ FROM dbo.demoCustomer AS C
+ LEFT OUTER JOIN dbo.demoSalesOrderHeader AS SOH
+ ON C.CustomerID = SOH.CustomerID
+ GROUP BY c.CustomerID
+ HAVING SUM(ISNULL(TotalDue,0)) < 1000)
+DELETE C
+FROM dbo.demoCustomer AS C
+INNER JOIN Sales ON C.CustomerID = Sales.CustomerID;
+DELETE FROM dbo.demoCustomer
+WHERE CustomerID IN (
+ SELECT C.CustomerID
+ FROM dbo.demoCustomer AS C
+ LEFT OUTER JOIN dbo.demoSalesOrderHeader AS SOH
+ ON C.CustomerID = SOH.CustomerID
+ GROUP BY c.CustomerID
+ HAVING SUM(ISNULL(TotalDue,0)) < 1000); 
+
+
+
+
+
